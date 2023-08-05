@@ -1,7 +1,0 @@
-django
-djangorestframework
-pillow
-psycopg2-binary
-django-decouple
-djangorestframework-simplejwt
-celery
