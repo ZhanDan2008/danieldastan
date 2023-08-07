@@ -35,3 +35,12 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
+class UserListSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username','email']
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        if len(repr['username'])<=1:
+            repr['username'] = 'me'
+        return repr

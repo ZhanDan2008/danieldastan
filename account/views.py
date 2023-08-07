@@ -8,8 +8,8 @@ from django.contrib.auth import get_user_model
 from django.urls.conf import path
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import ListModelMixin
+from rest_framework.viewsets import GenericViewSet,ModelViewSet
+from rest_framework.mixins import ListModelMixin,CreateModelMixin
 from rest_framework.response import Response
 from account import serializers
 from account.send_mail import send_confirmation_email
@@ -18,10 +18,18 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 User = get_user_model()
 
 
-class UserViewSet(ListModelMixin, GenericViewSet):
+class UserViewSet(ListModelMixin, GenericViewSet,CreateModelMixin):
     queryset = User.objects.all()
     serializer_class = serializers.UserSerializer
     permission_classes = (AllowAny, )
+    @action(['GET'],detail=False)
+    def listing(request, *args, **kwargs):
+
+        serializer = serializers.UserListSerializers # Instantiate the serializer class
+        data = User.objects.all()
+        serialized_data = serializer(data, many=True).data  # Serialize the data
+
+        return Response(serialized_data, status=200)
 
     @action(['POST'], detail=False)
     def register(self, request, *args, **kwargs):
@@ -34,6 +42,7 @@ class UserViewSet(ListModelMixin, GenericViewSet):
             except:
                 return Response({'msg': 'Registered, but troubles with email!', 'data': serializer.data}, status=200)
         return Response(serializer.data, status=201)
+
 
     @action(['GET'], detail=False, url_path='activate/(?P<uuid>[0-9A-Fa-f-]+)')
     def activate(self, request, uuid):
